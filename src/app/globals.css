@@ -1,10 +1,49 @@
+/* ──────────────────────────────────────────
+   LashFlow – Sistema de Design Global
+   Paleta: Rosa Premium · Rose Gold · Branco
+   ────────────────────────────────────────── */
 @import "tailwindcss";
 
+/* Variáveis de cor e espaçamento do sistema */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fdf5f8;
+  --foreground: #1a1825;
+  --surface: #ffffff;
+  --surface-soft: #fdf0f5;
+  --border: #f2d9e6;
+  --border-soft: #fae8f0;
+
+  /* Paleta principal rosa premium */
+  --brand: #c9497a;
+  --brand-hover: #b03d6b;
+  --brand-light: #f5d0e0;
+  --brand-soft: #fdf0f5;
+  --brand-glow: rgba(201, 73, 122, 0.15);
+
+  /* Rose gold */
+  --gold: #b76e79;
+  --gold-light: #f0d8db;
+
+  /* Texto */
+  --text-primary: #1a1825;
+  --text-secondary: #4b4558;
+  --text-muted: #8b8499;
+
+  /* Status */
+  --success: #059669;
+  --success-bg: #ecfdf5;
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
+  --error: #dc2626;
+  --error-bg: #fef2f2;
+
+  /* Sombras */
+  --shadow-card: 0 1px 3px rgba(201, 73, 122, 0.06), 0 4px 12px rgba(201, 73, 122, 0.08);
+  --shadow-elevated: 0 8px 30px rgba(201, 73, 122, 0.12), 0 2px 8px rgba(201, 73, 122, 0.06);
+  --shadow-hero: 0 20px 60px rgba(201, 73, 122, 0.14), 0 4px 16px rgba(201, 73, 122, 0.08);
 }
 
+/* Reset e base tipográfica */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -12,15 +51,139 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Fundo com gradiente radial suave */
+body {
+  background: radial-gradient(ellipse 120% 80% at 50% -10%, #fff0f6 0%, #fdf5f8 40%, #f9eef3 100%);
+  color: var(--text-primary);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Barra de seleção de texto */
+::selection {
+  background-color: var(--brand-light);
+  color: var(--brand);
+}
+
+/* Scrollbar personalizada para webkit */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface-soft);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--brand-light);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand);
+}
+
+/* Transições suaves em elementos interativos */
+button,
+input,
+textarea,
+select,
+a {
+  transition: background-color 0.2s ease, color 0.2s ease,
+    border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease,
+    transform 0.15s ease;
+}
+
+/* Imagens responsivas por padrão */
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* Anel de foco acessível com a cor da marca */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(201, 73, 122, 0.25);
+}
+
+/* Remove contorno padrão mantendo acessibilidade via focus-visible */
+input:focus,
+textarea:focus,
+select:focus,
+button:focus {
+  outline: none;
+}
+
+/* Classe utilitária para o anel de foco da marca */
+.focus-brand:focus-visible {
+  box-shadow: 0 0 0 3px rgba(201, 73, 122, 0.25);
+}
+
+/* Animação de entrada suave para modais e cards */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Utilitários de animação */
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease both;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease both;
+}
+
+/* Gradiente de texto da marca */
+.text-brand-gradient {
+  background: linear-gradient(135deg, var(--brand) 0%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Borda com brilho rosa */
+.border-brand-glow {
+  border: 1px solid var(--border);
+  box-shadow: 0 0 0 1px var(--brand-soft);
 }

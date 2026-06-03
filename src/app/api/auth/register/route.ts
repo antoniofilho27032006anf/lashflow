@@ -32,9 +32,10 @@ export async function POST(request: NextRequest) {
     }
 
     const { name, email, password } = validation.data;
+    const normalizedEmail = email.toLowerCase().trim();
 
     const existingUser = await User.findOne({
-      email,
+      email: normalizedEmail,
     });
 
     if (existingUser) {
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     const user = await User.create({
       name,
-      email,
+      email: normalizedEmail,
       password: hashedPassword,
       role: "CLIENT",
     });

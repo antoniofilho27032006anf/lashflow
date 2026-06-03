@@ -40,7 +40,14 @@ export async function POST(
   try {
     await connectDB();
 
-    const body = await request.json();
+    const body =
+      await request.json();
+
+    // DIAGNÓSTICO
+    console.log(
+      "BODY RECEBIDO:",
+      body
+    );
 
     const appointment =
       await Appointment.create(body);
