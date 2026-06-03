@@ -44,6 +44,13 @@ async function updateAppointmentStatus(id: string, status: string) {
   return res.json();
 }
 
+// Remove um agendamento pelo ID
+async function deleteAppointment(id: string) {
+  const res = await fetch(`/api/appointments/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Erro ao excluir agendamento");
+  return res.json();
+}
+
 // ── Componente principal ──────────────────────────────────────
 
 export default function AppointmentsPage() {
@@ -75,6 +82,22 @@ export default function AppointmentsPage() {
     queryKey: ["appointments"],
     queryFn: fetchAppointments,
   });
+
+  // Mutation para excluir agendamento — invalida a query após sucesso
+  const deleteMutation = useMutation({
+    mutationFn: deleteAppointment,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      showToast("Agendamento excluído.", "success");
+    },
+    onError: () => showToast("Erro ao excluir agendamento.", "error"),
+  });
+
+  // Confirma e dispara a exclusão do agendamento
+  function handleDelete(id: string) {
+    if (!window.confirm("Deseja realmente excluir este agendamento?")) return;
+    deleteMutation.mutate(id);
+  }
 
   // Mutation para atualizar o status — invalida a query após sucesso
   const statusMutation = useMutation({
@@ -333,7 +356,7 @@ export default function AppointmentsPage() {
                         statusMutation.mutate({ id: appointment._id, status: "CONFIRMED" })
                       }
                       disabled={
-                        statusMutation.isPending || appointment.status === "CONFIRMED"
+                        statusMutation.isPending || deleteMutation.isPending || appointment.status === "CONFIRMED"
                       }
                     >
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -349,7 +372,7 @@ export default function AppointmentsPage() {
                         statusMutation.mutate({ id: appointment._id, status: "CANCELED" })
                       }
                       disabled={
-                        statusMutation.isPending || appointment.status === "CANCELED"
+                        statusMutation.isPending || deleteMutation.isPending || appointment.status === "CANCELED"
                       }
                     >
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -358,8 +381,23 @@ export default function AppointmentsPage() {
                       Cancelar
                     </Button>
 
-                    {/* Spinner de carregamento durante a mutation */}
-                    {statusMutation.isPending && (
+                    {/* Botão de excluir agendamento permanentemente */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(appointment._id)}
+                      disabled={statusMutation.isPending || deleteMutation.isPending}
+                      className="ml-auto border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                      </svg>
+                      Excluir
+                    </Button>
+
+                    {/* Spinner durante qualquer operação em andamento */}
+                    {(statusMutation.isPending || deleteMutation.isPending) && (
                       <svg className="animate-spin text-pink-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <path d="M21 12a9 9 0 1 1-6.219-8.56" />
                       </svg>
