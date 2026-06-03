@@ -26,21 +26,33 @@ async function AdminDashboard({ session }: { session: any }) {
   const confirmedCount = await Appointment.countDocuments({ status: "CONFIRMED" });
   const pendingCount = await Appointment.countDocuments({ status: "PENDING" });
 
-  // Calcula a ocupação estimada com base nos dados reais
-  const utilization = Math.min(
-    95,
-    Math.max(62, Math.round((totalAppointments / Math.max(totalServices, 1)) * 30 + 55))
-  );
+  // Calcula a ocupação com base nos agendamentos confirmados vs total
+  const utilization = totalAppointments === 0
+    ? 0
+    : Math.round((confirmedCount / totalAppointments) * 100);
 
-  // Dados simulados para o gráfico de atividade semanal
+  // Busca todos os agendamentos para calcular a distribuição semanal real
+  const allAppointments = await Appointment.find({}, { appointmentDate: 1 });
+
+  // Conta quantos agendamentos existem em cada dia da semana (0=Dom, 1=Seg, ..., 6=Sáb)
+  const dayCounts = [0, 0, 0, 0, 0, 0, 0];
+  for (const appt of allAppointments) {
+    const dayIndex = new Date(appt.appointmentDate).getDay();
+    dayCounts[dayIndex]++;
+  }
+
+  // Calcula o máximo para normalizar as barras em porcentagem
+  const maxCount = Math.max(...dayCounts, 1);
+
+  // Monta os dados do gráfico com valores reais do banco
   const weeklyData = [
-    { day: "Seg", value: 68 },
-    { day: "Ter", value: 75 },
-    { day: "Qua", value: 82 },
-    { day: "Qui", value: 70 },
-    { day: "Sex", value: 90 },
-    { day: "Sáb", value: 85 },
-    { day: "Dom", value: 45 },
+    { day: "Seg", count: dayCounts[1], value: Math.round((dayCounts[1] / maxCount) * 100) },
+    { day: "Ter", count: dayCounts[2], value: Math.round((dayCounts[2] / maxCount) * 100) },
+    { day: "Qua", count: dayCounts[3], value: Math.round((dayCounts[3] / maxCount) * 100) },
+    { day: "Qui", count: dayCounts[4], value: Math.round((dayCounts[4] / maxCount) * 100) },
+    { day: "Sex", count: dayCounts[5], value: Math.round((dayCounts[5] / maxCount) * 100) },
+    { day: "Sáb", count: dayCounts[6], value: Math.round((dayCounts[6] / maxCount) * 100) },
+    { day: "Dom", count: dayCounts[0], value: Math.round((dayCounts[0] / maxCount) * 100) },
   ];
 
   return (
@@ -163,22 +175,34 @@ async function AdminDashboard({ session }: { session: any }) {
           <div className="rounded-2xl border border-pink-100 bg-white p-6 shadow-sm">
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Atividade semanal</h2>
-                <p className="mt-0.5 text-sm text-gray-500">Distribuição estimada de atendimentos</p>
+                <h2 className="text-lg font-semibold text-gray-900">Agendamentos por dia</h2>
+                <p className="mt-0.5 text-sm text-gray-500">Distribuição real dos atendimentos cadastrados</p>
               </div>
-              <span className="rounded-full bg-pink-50 px-3 py-1 text-xs font-medium text-pink-600">Esta semana</span>
+              <span className="rounded-full bg-pink-50 px-3 py-1 text-xs font-medium text-pink-600">
+                {totalAppointments} total
+              </span>
             </div>
-            <div className="space-y-3">
-              {weeklyData.map((item) => (
-                <div key={item.day} className="flex items-center gap-4">
-                  <span className="w-8 text-xs font-medium text-gray-500">{item.day}</span>
-                  <div className="flex-1 overflow-hidden rounded-full bg-pink-50">
-                    <div className="h-3 rounded-full bg-gradient-to-r from-pink-500 to-rose-400" style={{ width: `${item.value}%` }} />
+
+            {/* Estado vazio quando não há agendamentos */}
+            {totalAppointments === 0 ? (
+              <p className="text-center text-sm text-gray-400 py-6">Nenhum agendamento cadastrado ainda.</p>
+            ) : (
+              <div className="space-y-3">
+                {weeklyData.map((item) => (
+                  <div key={item.day} className="flex items-center gap-4">
+                    <span className="w-8 text-xs font-medium text-gray-500">{item.day}</span>
+                    <div className="flex-1 overflow-hidden rounded-full bg-pink-50">
+                      <div
+                        className="h-3 rounded-full bg-gradient-to-r from-pink-500 to-rose-400 transition-all duration-500"
+                        style={{ width: item.count === 0 ? "2px" : `${item.value}%` }}
+                      />
+                    </div>
+                    {/* Exibe o número real de agendamentos naquele dia */}
+                    <span className="w-6 text-right text-xs font-semibold text-gray-600">{item.count}</span>
                   </div>
-                  <span className="w-8 text-right text-xs font-medium text-gray-500">{item.value}%</span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="space-y-5">
